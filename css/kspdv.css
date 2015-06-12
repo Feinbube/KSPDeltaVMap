@@ -1,0 +1,48 @@
+.planetimage {
+  width: 80px;
+}
+
+.planetname {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.moonimage {
+    width: 50px;
+}
+
+.moonname {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.emph {
+    color: #FFFF00;
+    font-weight: bold;
+}
+
+.navbar-right {
+    text-align: right;
+}
+
+.fa-rocket, .fa-flag {
+    color: #A0A000;
+}
+
+.activestart, .activestart:link, .activestart:visited, .activestart:hover, .activestart:active,
+.activeobjective, .activeobjective:link, .activeobjective:visited, .activeobjective:hover, .activeobjective:active {
+    color: #A0A000;   
+}
+
+.navicon {
+    font-size: 40px;
+}
+
+.navbar-inverse {
+    box-shadow: 0px 2px 5px #555;
+    opacity: 0.95;
+}
+
+body { 
+    padding-top: 100px; 
+}
