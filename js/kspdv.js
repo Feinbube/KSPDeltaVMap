@@ -159,9 +159,10 @@ function systemGraph() {
         // Gilly    
     graphAdd(result, ["Gilly_Intercept",  "Gilly_LowOrbit",        410]);
     graphAdd(result, ["Gilly_LowOrbit",   "Gilly_Surface",          30]);
+    graphAdd(result, ["Eve_LowOrbit",     "Gilly_Intercept",      1270]);
 
     // Kerbin    
-    graphAdd(result, ["Kerbin_SurfaceA",   "Kerbin_LowOrbit",      3300]);
+    graphAdd(result, ["Kerbin_SurfaceA",  "Kerbin_LowOrbit",      3300]);
     graphAdd(result, ["Kerbin_LowOrbit",  "Kerbin_GSO",           1115]);
     graphAdd(result, ["Kerbin_LowOrbit",  "Kerbin_SOIEdge",        950]);
         // Mun
@@ -172,11 +173,14 @@ function systemGraph() {
     graphAdd(result, ["Kerbin_LowOrbit",  "Minmus_Intercept",      930]);
     graphAdd(result, ["Minmus_Intercept", "Minmus_LowOrbit",       160]);
     graphAdd(result, ["Minmus_LowOrbit",  "Minmus_Surface",        180]);
+        // Mun - Minmus
+    graphAdd(result, ["Minmus_Intercept", "Mun_Intercept",          70]);
 
     // Duna    
     graphAdd(result, ["Duna_Intercept",   "Duna_Elliptical",       250]);
     graphAdd(result, ["Duna_Elliptical",  "Duna_LowOrbit",         360]);
-    graphAdd(result, ["Duna_LowOrbit",    "Duna_SurfaceA",         1300]);
+    graphAdd(result, ["Duna_LowOrbit",    "Duna_SurfaceA",        1300]);
+    graphAdd(result, ["Duna_LowOrbit",    "Ike_Intercept",         330]);
         // Ike
     graphAdd(result, ["Duna_Elliptical",  "Ike_Intercept",          30]);
     graphAdd(result, ["Ike_Intercept",    "Ike_LowOrbit",          180]);
@@ -193,21 +197,37 @@ function systemGraph() {
         // Laythe
     graphAdd(result, ["Jool_Elliptical",  "Laythe_Intercept",      930]);
     graphAdd(result, ["Laythe_Intercept", "Laythe_LowOrbit",      1070]);
-    graphAdd(result, ["Laythe_LowOrbit",  "Laythe_SurfaceA",       2900]);
+    graphAdd(result, ["Laythe_LowOrbit",  "Laythe_SurfaceA",      2900]);
+    graphAdd(result, ["Jool_LowOrbit",    "Laythe_Intercept",     1880]);
         // Vall
     graphAdd(result, ["Jool_Elliptical",  "Vall_Intercept",        620]);
     graphAdd(result, ["Vall_Intercept",   "Vall_LowOrbit",         910]);
     graphAdd(result, ["Vall_LowOrbit",    "Vall_Surface",          860]);
+    graphAdd(result, ["Jool_LowOrbit",    "Vall_Intercept",       2190]);
         // Tylo
     graphAdd(result, ["Jool_Elliptical",  "Tylo_Intercept",        400]);
     graphAdd(result, ["Tylo_Intercept",   "Tylo_LowOrbit",        1100]);
     graphAdd(result, ["Tylo_LowOrbit",    "Tylo_Surface",         2270]);
+    graphAdd(result, ["Jool_LowOrbit",    "Tylo_Intercept",       2410]);
         // Bop    
     graphAdd(result, ["Bop_Intercept",    "Bop_LowOrbit",          900]);
     graphAdd(result, ["Bop_LowOrbit",     "Bop_Surface",           220]);
+    graphAdd(result, ["Jool_LowOrbit",    "Bop_Intercept",        2590]);
         // Pol        
     graphAdd(result, ["Pol_Intercept",    "Pol_LowOrbit",          820]);
     graphAdd(result, ["Pol_LowOrbit",     "Pol_Surface",           130]);
+    graphAdd(result, ["Jool_LowOrbit",    "Pol_Intercept",        2670]);
+        // Laythe - Vall - Tylo - Bop - Pol
+    graphAdd(result, ["Laythe_Intercept", "Vall_Intercept",        310]);
+    graphAdd(result, ["Laythe_Intercept", "Tylo_Intercept",        530]);
+    graphAdd(result, ["Laythe_Intercept", "Bop_Intercept",         710]);
+    graphAdd(result, ["Laythe_Intercept", "Pol_Intercept",         770]);
+    graphAdd(result, ["Vall_Intercept",   "Tylo_Intercept",        220]);
+    graphAdd(result, ["Vall_Intercept",   "Bop_Intercept",         400]);
+    graphAdd(result, ["Vall_Intercept",   "Pol_Intercept",         460]);
+    graphAdd(result, ["Tylo_Intercept",   "Bop_Intercept",         180]);
+    graphAdd(result, ["Tylo_Intercept",   "Pol_Intercept",         240]);
+    graphAdd(result, ["Bop_Intercept",    "Pol_Intercept",          60]);
 
     // Eeloo    
     graphAdd(result, ["Eeloo_Intercept",  "Eeloo_LowOrbit",       1370]);
@@ -279,16 +299,33 @@ function systemGraph() {
         graphReplace(result, ["Jool_Elliptical",   "Jool_LowOrbit",   0]);
         graphReplace(result, ["Laythe_Intercept",  "Laythe_LowOrbit", 0]);
 
+        graphReplace(result, ["Minmus_Intercept",  "Mun_Intercept",   0]);
+
+        graphReplace(result, ["Pol_Intercept",     "Bop_Intercept",   0]);
+        graphReplace(result, ["Bop_Intercept",     "Tylo_Intercept",  0]);
+        graphReplace(result, ["Tylo_Intercept",    "Vall_Intercept",  0]);
+        graphReplace(result, ["Vall_Intercept",    "Laythe_Intercept",0]);
+
     } 
 
     if(getFullAerobraking() || getLandingAerobraking()) { // aerobraking        
 
+        graphReplace(result, ["Gilly_Intercept",   "Eve_LowOrbit",     0]);
+
+        graphReplace(result, ["Ike_Intercept",     "Duna_LowOrbit",    0]);
+
         graphReplace(result, ["Minmus_Intercept",  "Kerbin_LowOrbit",  0]);
         graphReplace(result, ["Mun_Intercept",     "Kerbin_LowOrbit",  0]);
 
-        graphReplace(result, ["Eve_Elliptical",   "Eve_LowOrbit",      0]);
-        graphReplace(result, ["Duna_Elliptical",  "Duna_LowOrbit",     0]);
-        graphReplace(result, ["Jool_Elliptical",  "Jool_LowOrbit",     0]);
+        graphReplace(result, ["Laythe_Intercept",  "Jool_LowOrbit",    0]);
+        graphReplace(result, ["Vall_Intercept",    "Jool_LowOrbit",    0]);
+        graphReplace(result, ["Tylo_Intercept",    "Jool_LowOrbit",    0]);
+        graphReplace(result, ["Bop_Intercept",     "Jool_LowOrbit",    0]);
+        graphReplace(result, ["Pol_Intercept",     "Jool_LowOrbit",    0]);
+
+        graphReplace(result, ["Eve_Elliptical",    "Eve_LowOrbit",     0]);
+        graphReplace(result, ["Duna_Elliptical",   "Duna_LowOrbit",    0]);
+        graphReplace(result, ["Jool_Elliptical",   "Jool_LowOrbit",    0]);
 
         graphReplace(result, ["Kerbol_LowOrbit",   "Kerbol_SurfaceA",  0]);
         graphReplace(result, ["Kerbin_LowOrbit",   "Kerbin_SurfaceA",  0]);
