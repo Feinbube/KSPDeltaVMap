@@ -21,6 +21,10 @@
     font-weight: bold;
 }
 
+.decent, .decent:link, .decent:visited, .decent:hover, .decent:active {
+    color: #A2A2A2;
+}
+
 .navbar-right {
     text-align: right;
 }
@@ -31,7 +35,7 @@
 
 .activestart, .activestart:link, .activestart:visited, .activestart:hover, .activestart:active,
 .activeobjective, .activeobjective:link, .activeobjective:visited, .activeobjective:hover, .activeobjective:active {
-    color: #A0A000;   
+    color: #A0A00;   
 }
 
 .navicon {

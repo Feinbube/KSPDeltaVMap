@@ -370,7 +370,7 @@ function setPerfectionistProfile() {
 }
 
 function setRealisticProfile() {
-    setProfile(false, false, true, true, 20, 10);
+    setProfile(false, false, true, false, 20, 10);
 }
 
 function setCasualProfile() {
@@ -509,7 +509,7 @@ function setLandingAerobraking (value) { setValue("landingAerobraking", value); 
 function getLandingAerobraking ()      { return getBoolean("landingAerobraking", true); }
 
 function setPlaneChanges (value) { setValue("planeChanges", value); }
-function getPlaneChanges ()      { return getBoolean("planeChanges", true); }
+function getPlaneChanges ()      { return getBoolean("planeChanges", false); }
 
 function setAtmosphereDeltaVMargin (value) { setValue("atmosphereDeltaVMargin", value); }
 function getAtmosphereDeltaVMargin ()      { return getInteger("atmosphereDeltaVMargin", 20); }
