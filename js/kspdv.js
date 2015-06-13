@@ -79,9 +79,6 @@ function missionDetails() {
                 var additionalDeltaV = getDeltaV(graph[i][2], missionPlan[missionPlanIndex], missionPlan[missionPlanIndex+1]);
                 deltav = deltav + additionalDeltaV;
                 mission = mission + missionStep(true, info, Math.round(additionalDeltaV) + " m/s", Math.round(deltav) + " m/s");
-                console.log(missionPlan[missionPlanIndex] + " to " + missionPlan[missionPlanIndex+1]);
-                console.log(graph[i][0] + " to " + graph[i][1] + " by " + graph[i][2]);
-                console.log(" ");
                 continue;
             }
         };
