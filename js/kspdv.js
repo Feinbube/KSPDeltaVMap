@@ -13,9 +13,9 @@ function missionObjective(objective) {
     if(!getStartFromKerbin())
         startState = targetState;
 
-    targetState = objective; 
+    targetState = objective;
 
-    updateMissionInfo();   
+    updateMissionInfo();
 }
 
 function updateMissionInfo() {
@@ -38,11 +38,13 @@ function missionStateTextNormal(state) {
 
 function missionStateText(state) {
     var stateParts = state.split("_");
-    
+
     if(stateParts[0] == "Mun")
         stateParts[0] = "the Mun";
 
-    if(stateParts[1] == "Surface" || stateParts[1] == "SurfaceA")
+    if(state == "Kerbin_Intercept" || state == "Kerbin_Elliptical")
+        return ["the edge of the influence of ", stateParts[0]];
+    else if(stateParts[1] == "Surface" || stateParts[1] == "SurfaceA")
         return ["the surface of ", stateParts[0]];
     else if(stateParts[1] == "LowOrbit")
         return ["a low orbit around ", stateParts[0]];
@@ -52,9 +54,7 @@ function missionStateText(state) {
         return ["an elliptical orbit around ", stateParts[0]];
     else if(stateParts[1] == "GSO")
         return ["a geo-stationary orbit around ", stateParts[0]];
-    else if(stateParts[1] == "SOIEdge")        
-        return ["the edge of the influence of ", stateParts[0]];
-    else if(stateParts[1] == "Plane")
+    else if(stateParts[1] == "PlaneBy")
         return ["the orbital plane of ", stateParts[0]];
     else
         throw "State can not be decoded: " + state;
@@ -71,18 +71,18 @@ function missionDetails() {
     for (var missionPlanIndex = 0; missionPlanIndex < missionPlan.length -1; missionPlanIndex++) {
         for (var i = graph.length - 1; i >= 0; i--) {
             if(graph[i][0] == missionPlan[missionPlanIndex] && graph[i][1] == missionPlan[missionPlanIndex+1]) {
+                if(missionPlan[missionPlanIndex] == "Kerbin_Intercept" && missionPlan[missionPlanIndex+1] == "Kerbin_Elliptical")
+                    continue;
+                if(missionPlan[missionPlanIndex] == "Kerbin_Elliptical" && missionPlan[missionPlanIndex+1] == "Kerbin_Intercept")
+                    continue;
                 var info = "To " + missionStateTextNormal(missionPlan[missionPlanIndex+1]) + ".";
-                
-                if(!getPlaneChanges() && missionPlan[missionPlanIndex+1].split('_')[1] == "Plane")
-                    info = info + " (ignored)";
-                
                 var additionalDeltaV = getDeltaV(graph[i][2], missionPlan[missionPlanIndex], missionPlan[missionPlanIndex+1]);
                 deltav = deltav + additionalDeltaV;
                 mission = mission + missionStep(true, info, Math.round(additionalDeltaV) + " m/s", Math.round(deltav) + " m/s");
                 continue;
             }
         };
-    };  
+    };
 
     $("#missionPlan").html(mission);
 }
@@ -97,7 +97,7 @@ function missionStep (showRocket, info, dv, dvSum) {
 function getDeltaV (value, fromGraphNode, toGraphNode) {
     var inAtmosphere = fromGraphNode.split("_")[1] == "SurfaceA" || toGraphNode.split("_")[1] == "SurfaceA";
     var result = value;
-    
+
     if(inAtmosphere && getAtmosphereDeltaVMargin() > 0)
         result = result + getAtmosphereDeltaVMargin() / 100.0 * result;
 
@@ -123,7 +123,7 @@ function selectDeltaV(startState, objective) {
                 continue;
             }
         };
-    };    
+    };
 
     return Math.round(deltav/10)*10;
 }
@@ -144,188 +144,125 @@ function systemGraph() {
     var result = [];
 
     // Kerbol
-    graphAdd(result, ["Kerbin_SOIEdge",   "Kerbol_Elliptical",    4600]);
-    graphAdd(result, ["Kerbol_Elliptical","Kerbol_LowOrbit",     13500]);
-    graphAdd(result, ["Kerbol_LowOrbit",  "Kerbol_SurfaceA",      67000]);
+    graphAdd(result, ["Kerbin_Intercept",  "Kerbol_Elliptical",    6000]);
+    graphAdd(result, ["Kerbol_Elliptical", "Kerbol_LowOrbit",     13700]);
+    graphAdd(result, ["Kerbol_LowOrbit",   "Kerbol_SurfaceA",     67000]);
 
-    // Moho    
+    // Moho
     graphAdd(result, ["Moho_Intercept",   "Moho_LowOrbit",        2410]);
     graphAdd(result, ["Moho_LowOrbit",    "Moho_Surface",          870]);
 
-    // Eve    
+    // Eve
     graphAdd(result, ["Eve_Intercept",    "Eve_Elliptical",         80]);
     graphAdd(result, ["Eve_Elliptical",   "Eve_LowOrbit",         1330]);
-    graphAdd(result, ["Eve_LowOrbit",     "Eve_SurfaceA",          6000]);
-        // Gilly    
+    graphAdd(result, ["Eve_LowOrbit",     "Eve_SurfaceA",         8000]);
+        // Gilly
     graphAdd(result, ["Gilly_Intercept",  "Gilly_LowOrbit",        410]);
     graphAdd(result, ["Gilly_LowOrbit",   "Gilly_Surface",          30]);
-    graphAdd(result, ["Eve_LowOrbit",     "Gilly_Intercept",      1270]);
 
-    // Kerbin    
-    graphAdd(result, ["Kerbin_SurfaceA",  "Kerbin_LowOrbit",      3300]);
-    graphAdd(result, ["Kerbin_LowOrbit",  "Kerbin_GSO",           1115]);
-    graphAdd(result, ["Kerbin_LowOrbit",  "Kerbin_SOIEdge",        950]);
+    // Kerbin
+    graphAdd(result, ["Kerbin_SurfaceA",   "Kerbin_LowOrbit",      3400]);
+    graphAdd(result, ["Kerbin_LowOrbit",   "Kerbin_GSO",           1115]);
+    graphAdd(result, ["Kerbin_LowOrbit",   "Kerbin_Elliptical",     950]);
+    graphAdd(result, ["Kerbin_Elliptical", "Kerbin_Intercept",        0]);
         // Mun
-    graphAdd(result, ["Kerbin_LowOrbit",  "Mun_Intercept",         860]);
     graphAdd(result, ["Mun_Intercept",    "Mun_LowOrbit",          310]);
     graphAdd(result, ["Mun_LowOrbit",     "Mun_Surface",           580]);
-        // Minmus    
-    graphAdd(result, ["Kerbin_LowOrbit",  "Minmus_Intercept",      930]);
+        // Minmus
     graphAdd(result, ["Minmus_Intercept", "Minmus_LowOrbit",       160]);
     graphAdd(result, ["Minmus_LowOrbit",  "Minmus_Surface",        180]);
-        // Mun - Minmus
-    graphAdd(result, ["Minmus_Intercept", "Mun_Intercept",          70]);
 
-    // Duna    
+    // Duna
     graphAdd(result, ["Duna_Intercept",   "Duna_Elliptical",       250]);
     graphAdd(result, ["Duna_Elliptical",  "Duna_LowOrbit",         360]);
-    graphAdd(result, ["Duna_LowOrbit",    "Duna_SurfaceA",        1300]);
-    graphAdd(result, ["Duna_LowOrbit",    "Ike_Intercept",         330]);
+    graphAdd(result, ["Duna_LowOrbit",    "Duna_SurfaceA",        1450]);
         // Ike
-    graphAdd(result, ["Duna_Elliptical",  "Ike_Intercept",          30]);
     graphAdd(result, ["Ike_Intercept",    "Ike_LowOrbit",          180]);
     graphAdd(result, ["Ike_LowOrbit",     "Ike_Surface",           390]);
 
-    // Dres    
+    // Dres
     graphAdd(result, ["Dres_Intercept",   "Dres_LowOrbit",        1290]);
     graphAdd(result, ["Dres_LowOrbit",    "Dres_Surface",          430]);
 
-    // Jool    
+    // Jool
     graphAdd(result, ["Jool_Intercept",   "Jool_Elliptical",       160]);
     graphAdd(result, ["Jool_Elliptical",  "Jool_LowOrbit",        2810]);
-    graphAdd(result, ["Jool_LowOrbit",    "Jool_SurfaceA",        16000]);
+    graphAdd(result, ["Jool_LowOrbit",    "Jool_SurfaceA",       14000]);
         // Laythe
-    graphAdd(result, ["Jool_Elliptical",  "Laythe_Intercept",      930]);
     graphAdd(result, ["Laythe_Intercept", "Laythe_LowOrbit",      1070]);
     graphAdd(result, ["Laythe_LowOrbit",  "Laythe_SurfaceA",      2900]);
-    graphAdd(result, ["Jool_LowOrbit",    "Laythe_Intercept",     1880]);
         // Vall
-    graphAdd(result, ["Jool_Elliptical",  "Vall_Intercept",        620]);
     graphAdd(result, ["Vall_Intercept",   "Vall_LowOrbit",         910]);
     graphAdd(result, ["Vall_LowOrbit",    "Vall_Surface",          860]);
-    graphAdd(result, ["Jool_LowOrbit",    "Vall_Intercept",       2190]);
         // Tylo
-    graphAdd(result, ["Jool_Elliptical",  "Tylo_Intercept",        400]);
     graphAdd(result, ["Tylo_Intercept",   "Tylo_LowOrbit",        1100]);
     graphAdd(result, ["Tylo_LowOrbit",    "Tylo_Surface",         2270]);
-    graphAdd(result, ["Jool_LowOrbit",    "Tylo_Intercept",       2410]);
-        // Bop    
+        // Bop
     graphAdd(result, ["Bop_Intercept",    "Bop_LowOrbit",          900]);
-    graphAdd(result, ["Bop_LowOrbit",     "Bop_Surface",           220]);
-    graphAdd(result, ["Jool_LowOrbit",    "Bop_Intercept",        2590]);
-        // Pol        
+    graphAdd(result, ["Bop_LowOrbit",     "Bop_Surface",           230]);
+        // Pol
     graphAdd(result, ["Pol_Intercept",    "Pol_LowOrbit",          820]);
     graphAdd(result, ["Pol_LowOrbit",     "Pol_Surface",           130]);
-    graphAdd(result, ["Jool_LowOrbit",    "Pol_Intercept",        2670]);
-        // Laythe - Vall - Tylo - Bop - Pol
-    graphAdd(result, ["Laythe_Intercept", "Vall_Intercept",        310]);
-    graphAdd(result, ["Laythe_Intercept", "Tylo_Intercept",        530]);
-    graphAdd(result, ["Laythe_Intercept", "Bop_Intercept",         710]);
-    graphAdd(result, ["Laythe_Intercept", "Pol_Intercept",         770]);
-    graphAdd(result, ["Vall_Intercept",   "Tylo_Intercept",        220]);
-    graphAdd(result, ["Vall_Intercept",   "Bop_Intercept",         400]);
-    graphAdd(result, ["Vall_Intercept",   "Pol_Intercept",         460]);
-    graphAdd(result, ["Tylo_Intercept",   "Bop_Intercept",         180]);
-    graphAdd(result, ["Tylo_Intercept",   "Pol_Intercept",         240]);
-    graphAdd(result, ["Bop_Intercept",    "Pol_Intercept",          60]);
 
-    // Eeloo    
+    // Eeloo
     graphAdd(result, ["Eeloo_Intercept",  "Eeloo_LowOrbit",       1370]);
     graphAdd(result, ["Eeloo_LowOrbit",   "Eeloo_Surface",         620]);
 
-    if(getPlaneChanges()) {
+    // plane changes
+    addPlaneChangesSiblings(result, "Kerbin", "Moho",  2520,  760);
+    addPlaneChangesSiblings(result, "Kerbin", "Eve",    430,   90);
+    addPlaneChangesSiblings(result, "Kerbin", "Duna",    10,  130);
+    addPlaneChangesSiblings(result, "Kerbin", "Dres",  1010,  610);
+    addPlaneChangesSiblings(result, "Kerbin", "Jool",   270,  980);
+    addPlaneChangesSiblings(result, "Kerbin", "Eeloo", 1330, 1140);
 
-        graphAdd(result, ["Kerbin_SOIEdge", "Moho_Plane",         2520]);
-        graphAdd(result, ["Moho_Plane",     "Moho_Intercept",      760]);        
-        graphAdd(result, ["Kerbin_SOIEdge", "Eve_Plane",           430]);
-        graphAdd(result, ["Eve_Plane",      "Eve_Intercept",        90]);
-        graphAdd(result, ["Eve_Elliptical", "Gilly_Plane",         930]);
-        graphAdd(result, ["Gilly_Plane",    "Gilly_Intercept",      60]);
-        graphAdd(result, ["Kerbin_LowOrbit","Minmus_Plane",        340]);
-        graphAdd(result, ["Minmus_Plane",   "Minmus_Intercept",    930]);        
-        graphAdd(result, ["Kerbin_SOIEdge", "Duna_Plane",           10]);
-        graphAdd(result, ["Duna_Plane",     "Duna_Intercept",      130]);
-        graphAdd(result, ["Kerbin_SOIEdge", "Dres_Plane",         1010]);
-        graphAdd(result, ["Dres_Plane",     "Dres_Intercept",      610]);
-        graphAdd(result, ["Kerbin_SOIEdge", "Jool_Plane",          270]);
-        graphAdd(result, ["Jool_Plane",     "Jool_Intercept",      980]);
-        graphAdd(result, ["Jool_Elliptical","Bop_Plane",          2440]);
-        graphAdd(result, ["Bop_Plane",      "Bop_Intercept",       220]);
-        graphAdd(result, ["Jool_Elliptical","Pol_Plane",           700]);
-        graphAdd(result, ["Pol_Plane",      "Pol_Intercept",       160]);
-        graphAdd(result, ["Kerbin_SOIEdge", "Eeloo_Plane",        1330]);
-        graphAdd(result, ["Eeloo_Plane",    "Eeloo_Intercept",    1140]);
+    addPlaneChangesSiblings(result, "Minmus", "Mun",    340,   70);
 
-    } else {
+    addPlaneChangesSiblings(result, "Laythe", "Vall",     0,  310);
+    addPlaneChangesSiblings(result, "Laythe", "Tylo",     0,  530);
+    addPlaneChangesSiblings(result, "Laythe", "Bop",   2440,  710);
+    addPlaneChangesSiblings(result, "Laythe", "Pol",    700,  770);
+    addPlaneChangesSiblings(result, "Vall",   "Tylo",     0,  220);
+    addPlaneChangesSiblings(result, "Vall",   "Bop",   2440,  400);
+    addPlaneChangesSiblings(result, "Vall",   "Pol",    700,  460);
+    addPlaneChangesSiblings(result, "Tylo",   "Bop",   2440,  180);
+    addPlaneChangesSiblings(result, "Tylo",   "Pol",    700,  240);
+    addPlaneChangesSiblings(result, "Bop",    "Pol",   1740,   60);
 
-        graphAdd(result, ["Kerbin_SOIEdge", "Moho_Plane",            0]);
-        graphAdd(result, ["Moho_Plane",     "Moho_Intercept",      760]);
-        graphAdd(result, ["Kerbin_SOIEdge", "Eve_Plane",             0]);
-        graphAdd(result, ["Eve_Plane",      "Eve_Intercept",        90]);
-        graphAdd(result, ["Eve_Elliptical", "Gilly_Plane",           0]);
-        graphAdd(result, ["Gilly_Plane",    "Gilly_Intercept",      60]);
-        graphAdd(result, ["Kerbin_LowOrbit","Minmus_Plane",          0]);
-        graphAdd(result, ["Minmus_Plane",   "Minmus_Intercept",    930]);        
-        graphAdd(result, ["Kerbin_SOIEdge", "Duna_Plane",            0]);
-        graphAdd(result, ["Duna_Plane",     "Duna_Intercept",      130]);
-        graphAdd(result, ["Kerbin_SOIEdge", "Dres_Plane",            0]);
-        graphAdd(result, ["Dres_Plane",     "Dres_Intercept",      610]);
-        graphAdd(result, ["Kerbin_SOIEdge", "Jool_Plane",            0]);
-        graphAdd(result, ["Jool_Plane",     "Jool_Intercept",      980]);
-        graphAdd(result, ["Jool_Elliptical","Bop_Plane",             0]);
-        graphAdd(result, ["Bop_Plane",      "Bop_Intercept",       220]);
-        graphAdd(result, ["Jool_Elliptical","Pol_Plane",             0]);
-        graphAdd(result, ["Pol_Plane",      "Pol_Intercept",       160]);
-        graphAdd(result, ["Kerbin_SOIEdge", "Eeloo_Plane",           0]);
-        graphAdd(result, ["Eeloo_Plane",    "Eeloo_Intercept",    1140]);
+    // wild guesses
+    addPlaneChangesSiblings(result, "Moho",   "Eve",   2090,  670);
+    addPlaneChangesSiblings(result, "Duna",   "Dres",  1000,  480);
+    addPlaneChangesSiblings(result, "Dres",   "Jool",  1280,  370);
+    addPlaneChangesSiblings(result, "Jool",   "Eeloo", 1600,  160);
 
-        // shortcuts
-        graphAdd(result, ["Moho_Intercept",   "Eve_Intercept",     670]);
-        graphAdd(result, ["Duna_Intercept",   "Dres_Intercept",    480]);
-        graphAdd(result, ["Dres_Intercept",   "Jool_Intercept",    370]);
-        graphAdd(result, ["Jool_Intercept",   "Eeloo_Intercept",   160]);
+    // plane changes moons - some guesses
+    addPlaneChangesOrbiters(result, "Eve",    true, "Gilly",  930,   60, 1270);
+    addPlaneChangesOrbiters(result, "Kerbin", true, "Mun",      0,   90,  860);
+    addPlaneChangesOrbiters(result, "Kerbin", true, "Minmus", 340,   20,  930);
+    addPlaneChangesOrbiters(result, "Duna",   true, "Ike",      0,   30,  330);
+    addPlaneChangesOrbiters(result, "Jool",   true, "Laythe",   0,  930, 1880);
+    addPlaneChangesOrbiters(result, "Jool",   true, "Vall",     0,  620, 2190);
+    addPlaneChangesOrbiters(result, "Jool",   true, "Tylo",     0,  400, 2410);
+    addPlaneChangesOrbiters(result, "Jool",   true, "Bop",   2440,  220, 2590);
+    addPlaneChangesOrbiters(result, "Jool",   true, "Pol",    700,  160, 2650);
+
+    if(getFullAerobraking()) { // aerobraking
+
+        graphReplace(result, ["Kerbin_Intercept",  "Kerbin_LowOrbit", 0]);
+        graphReplace(result, ["Eve_Intercept",     "Eve_Elliptical",  0]);
+        graphReplace(result, ["Duna_Intercept",    "Duna_Elliptical", 0]);
+        graphReplace(result, ["Jool_Intercept",    "Jool_Elliptical", 0]);
 
     }
 
-    if(getFullAerobraking()) { // aerobraking        
+    if(getLandingAerobraking()) { // aerobraking
 
-        graphReplace(result, ["Kerbol_Elliptical", "Kerbol_LowOrbit", 0]);
-        graphReplace(result, ["Kerbin_SOIEdge",    "Kerbin_LowOrbit", 0]);
-        graphReplace(result, ["Eve_Intercept",     "Eve_Elliptical",  0]);
-        graphReplace(result, ["Eve_Elliptical",    "Eve_LowOrbit",    0]);
-        graphReplace(result, ["Duna_Intercept",    "Duna_Elliptical", 0]);
-        graphReplace(result, ["Duna_Elliptical",   "Duna_LowOrbit",   0]);
-        graphReplace(result, ["Jool_Intercept",    "Jool_Elliptical", 0]);
-        graphReplace(result, ["Jool_Elliptical",   "Jool_LowOrbit",   0]);
-        graphReplace(result, ["Laythe_Intercept",  "Laythe_LowOrbit", 0]);
-
-        graphReplace(result, ["Minmus_Intercept",  "Mun_Intercept",   0]);
-
-        graphReplace(result, ["Pol_Intercept",     "Bop_Intercept",   0]);
-        graphReplace(result, ["Bop_Intercept",     "Tylo_Intercept",  0]);
-        graphReplace(result, ["Tylo_Intercept",    "Vall_Intercept",  0]);
-        graphReplace(result, ["Vall_Intercept",    "Laythe_Intercept",0]);
-
-    } 
-
-    if(getFullAerobraking() || getLandingAerobraking()) { // aerobraking        
-
-        graphReplace(result, ["Gilly_Intercept",   "Eve_LowOrbit",     0]);
-
-        graphReplace(result, ["Ike_Intercept",     "Duna_LowOrbit",    0]);
-
-        graphReplace(result, ["Minmus_Intercept",  "Kerbin_LowOrbit",  0]);
-        graphReplace(result, ["Mun_Intercept",     "Kerbin_LowOrbit",  0]);
-
-        graphReplace(result, ["Laythe_Intercept",  "Jool_LowOrbit",    0]);
-        graphReplace(result, ["Vall_Intercept",    "Jool_LowOrbit",    0]);
-        graphReplace(result, ["Tylo_Intercept",    "Jool_LowOrbit",    0]);
-        graphReplace(result, ["Bop_Intercept",     "Jool_LowOrbit",    0]);
-        graphReplace(result, ["Pol_Intercept",     "Jool_LowOrbit",    0]);
-
+        graphReplace(result, ["Kerbol_Elliptical", "Kerbol_LowOrbit",  0]);
         graphReplace(result, ["Eve_Elliptical",    "Eve_LowOrbit",     0]);
+        graphReplace(result, ["Kerbin_Elliptical", "Kerbin_LowOrbit",  0]);
         graphReplace(result, ["Duna_Elliptical",   "Duna_LowOrbit",    0]);
         graphReplace(result, ["Jool_Elliptical",   "Jool_LowOrbit",    0]);
+        graphReplace(result, ["Laythe_Intercept",  "Laythe_LowOrbit",  0]);
 
         graphReplace(result, ["Kerbol_LowOrbit",   "Kerbol_SurfaceA",  0]);
         graphReplace(result, ["Kerbin_LowOrbit",   "Kerbin_SurfaceA",  0]);
@@ -334,18 +271,40 @@ function systemGraph() {
         graphReplace(result, ["Jool_LowOrbit",     "Jool_SurfaceA",    0]);
         graphReplace(result, ["Laythe_LowOrbit",   "Laythe_SurfaceA",  0]);
 
-    } 
+    }
 
     return result;
 }
 
-function graphA(graph, start, objective, dv) {
-    graph.push([start, objective, dv]);
+function addPlaneChangesSiblings (result, sibling1, sibling2, dvPlane, dvTransfer) {
+    if(!getPlaneChanges())
+        dvPlane = 0;
+
+    graphA(result, sibling1 + "_Intercept",           sibling2 + "_PlaneBy_" + sibling1, dvPlane);
+    graphA(result, sibling2 + "_PlaneBy_" + sibling1, sibling2 + "_Intercept",           dvTransfer);
+    graphA(result, sibling2 + "_Intercept",           sibling1 + "_PlaneBy_" + sibling2, dvPlane);
+    graphA(result, sibling1 + "_PlaneBy_" + sibling2, sibling1 + "_Intercept",           dvTransfer);
 }
 
-function graphAdd2(graph, start, objective, dv1, dv2) {
-    graph.push([start, objective, dv1]);
-    graph.push([objective, start, dv2]);
+function addPlaneChangesOrbiters (result, centerBody, centerHasAtmosphere, orbiter, dvPlane, dvTransferElliptic, dvTransferLow) {
+    if(!getPlaneChanges())
+        dvPlane = 0;
+
+    graphA(result, centerBody + "_Elliptical",                  orbiter + "_PlaneBy_Elliptic_" + centerBody, dvPlane);
+    graphA(result, orbiter + "_PlaneBy_Elliptic_" + centerBody, orbiter + "_Intercept",                      dvTransferElliptic);
+    graphA(result, orbiter + "_Intercept",                      centerBody + "_Elliptical",                  dvTransferElliptic);
+
+    graphA(result, centerBody + "_LowOrbit",                    orbiter + "_PlaneBy_LowOrbit_" + centerBody, dvPlane);
+    graphA(result, orbiter + "_PlaneBy_LowOrbit_" + centerBody, orbiter + "_Intercept",                      dvTransferLow);
+
+    if(centerHasAtmosphere && getLandingAerobraking())
+        dvTransferLow = 0;
+
+    graphA(result, orbiter + "_Intercept",                      centerBody + "_LowOrbit",                    dvTransferLow);
+}
+
+function graphA(graph, start, objective, dv) {
+    graph.push([start, objective, dv]);
 }
 
 function graphAdd(graph, entry) {
@@ -370,7 +329,7 @@ function setPerfectionistProfile() {
 }
 
 function setRealisticProfile() {
-    setProfile(false, false, true, true, 20, 10);
+    setProfile(false, false, true, false, 20, 10);
 }
 
 function setCasualProfile() {
@@ -378,9 +337,9 @@ function setCasualProfile() {
 }
 
 function setProfile (startingFromKerbin, fullAerobraking, aerobrakingForLanding, planeChanges, atmosphereDeltaVMargin, vacuumDeltaVMargin) {
-    setChecked("#rbStartFromKerbin", startingFromKerbin);    
+    setChecked("#rbStartFromKerbin", startingFromKerbin);
     setChecked("#rbStartFromPreviousTarget", !startingFromKerbin);
-    setChecked("#rbMaximalAerobrakingOn", fullAerobraking);    
+    setChecked("#rbMaximalAerobrakingOn", fullAerobraking);
     setChecked("#rbMaximalAerobrakingOff", !fullAerobraking);
     setChecked("#rbLandingAerobrakingOn", aerobrakingForLanding);
     setChecked("#rbLandingAerobrakingOff", !aerobrakingForLanding);
@@ -391,12 +350,12 @@ function setProfile (startingFromKerbin, fullAerobraking, aerobrakingForLanding,
 }
 
 function setChecked(radioButtonId, checked) {
-    $(radioButtonId).attr("checked", checked);   
+    $(radioButtonId).attr("checked", checked);
     if(checked) {
         if($(radioButtonId).parent().attr("class").indexOf("active") == -1)
-            $(radioButtonId).parent().attr("class", $(radioButtonId).parent().attr("class") + " active"); 
+            $(radioButtonId).parent().attr("class", $(radioButtonId).parent().attr("class") + " active");
     } else {
-        $(radioButtonId).parent().attr("class", $(radioButtonId).parent().attr("class").replace(" active", "")); 
+        $(radioButtonId).parent().attr("class", $(radioButtonId).parent().attr("class").replace(" active", ""));
     }
 }
 
@@ -438,7 +397,7 @@ function applySettings() {
     if(getStartFromKerbin()) {
         setStartAnchor($("#startingAnchor"));
         startState = "Kerbin_SurfaceA";
-    }    
+    }
 
     updateMissionInfo();
 }
@@ -467,7 +426,7 @@ $(document).ready(function() {
     targetAnchor = $("#startingAnchor");
 
     $(".aobjective").click(function() {
-    
+
         if(!getStartFromKerbin()) {
             setStartAnchor(targetAnchor);
         }
@@ -479,7 +438,7 @@ $(document).ready(function() {
 function setStartAnchor(newAnchor) {
     startAnchor.html(startAnchor.html().replace('<i class="fa fa-rocket"></i>', ''));
     startAnchor.attr("class", startAnchor.attr("class").replace(" activestart", ""));
-    startAnchor = newAnchor;    
+    startAnchor = newAnchor;
     startAnchor.html('<i class="fa fa-rocket"></i>' + startAnchor.html());
     startAnchor.attr("class", "aobjective activestart");
 }
@@ -487,7 +446,7 @@ function setStartAnchor(newAnchor) {
 function setTargetAnchor(newAnchor) {
     targetAnchor.html(targetAnchor.html().replace('<i class="fa fa-flag"></i>', ''));
     targetAnchor.attr("class", targetAnchor.attr("class").replace(" activeobjective", ""));
-    targetAnchor = newAnchor;    
+    targetAnchor = newAnchor;
     targetAnchor.html('<i class="fa fa-flag"></i>' + targetAnchor.html());
     targetAnchor.attr("class", "aobjective activeobjective");
 }
@@ -509,7 +468,7 @@ function setLandingAerobraking (value) { setValue("landingAerobraking", value); 
 function getLandingAerobraking ()      { return getBoolean("landingAerobraking", true); }
 
 function setPlaneChanges (value) { setValue("planeChanges", value); }
-function getPlaneChanges ()      { return getBoolean("planeChanges", true); }
+function getPlaneChanges ()      { return getBoolean("planeChanges", false); }
 
 function setAtmosphereDeltaVMargin (value) { setValue("atmosphereDeltaVMargin", value); }
 function getAtmosphereDeltaVMargin ()      { return getInteger("atmosphereDeltaVMargin", 20); }
@@ -557,5 +516,6 @@ function getBoolean (id, defaultValue) {
 }
 
 function getInteger (id, defaultValue) {
-    return parseInt(getValue(id, defaultValue));    
+    return parseInt(getValue(id, defaultValue));
 }
+
